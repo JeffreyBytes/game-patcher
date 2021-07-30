@@ -1,0 +1,34 @@
+#!/bin/bash
+
+clear
+
+current_dir=$(pwd)
+PATCH_FOLDER="$current_dir/patches/"
+
+echo -n "Old build path: "
+read OLD
+echo -n "New build path: "
+read NEW
+
+IFS=$'\n'
+
+for file in $(find $NEW -name '*.scs' -or -name '*.rtf' -or -name '*.txt')
+do
+    filename=$(basename $file)
+
+    if [[ -n $(find $OLD -name $filename) ]]
+    then
+        old_path=$(find $OLD -name $filename)
+        if [[ -n $(diff $old_path $file) ]] # old and new files differ
+        then
+            echo "Generating patch file for $filename"
+            xdelta3 -e -f -s "$old_path" "$file" "$PATCH_FOLDER/$filename.xdelta"
+        else # old and new files are same
+            echo "Skipping: $filename has not changed"
+        fi
+    else # file doesn't exist in old version, copy entire file to patch folder
+        echo "New File: Copying entire file"
+        cp "$file" "$PATCH_FOLDER/$filename"
+    fi
+
+done

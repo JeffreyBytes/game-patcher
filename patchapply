@@ -1,0 +1,32 @@
+#!/bin/bash
+
+clear
+
+current_dir=$(pwd)
+PATCH_FOLDER="$current_dir/patches"
+OUTPUT_FOLDER="$current_dir/new/" # TODO: remove this in favor of $game_path
+
+echo "$PATCH_FOLDER"
+echo "$OUTPUT_FOLDER"
+
+echo -n "Location of ETS2: "
+read game_path
+echo "$game_path"
+
+IFS=$'\n'
+
+for file in $(find $PATCH_FOLDER -name '*.xdelta')
+do
+    filename=$(basename $file)
+    extension="${filename##*.}"
+    filename_new="${filename%.*}"
+
+    if [[ -n $(find $game_path -name $filename_new) ]]
+    then
+        old_path=$(find $game_path -name $filename_new)
+        echo "Patching $filename_new"
+        xdelta3 -d -f -s "$old_path" "$file" "$OUTPUT_FOLDER/$filename_new"
+    else # file doesn't exist in old version
+        echo "Error: Can't find $filename_new"
+    fi
+done
