@@ -3,19 +3,28 @@
 clear
 
 current_dir=$(pwd)
-PATCH_FOLDER="$current_dir/patches"
-OUTPUT_FOLDER="$current_dir/new/" # TODO: remove this in favor of $game_path
+patch_dir="$current_dir/patches"
+output_dir="$current_dir/new/" # TODO: remove this in favor of $game_path
 
-echo "$PATCH_FOLDER"
-echo "$OUTPUT_FOLDER"
 
 echo -n "Location of ETS2: "
 read game_path
 echo "$game_path"
 
+# check if patch_dir and output_dir exist
+if [[ ! -d $patch_dir ]]
+then
+    mkdir $patch_dir
+fi
+
+if [[ ! -d $output_dir ]]
+then
+    mkdir $output_dir
+fi
+
 IFS=$'\n'
 
-for file in $(find $PATCH_FOLDER -name '*.xdelta')
+for file in $(find $patch_dir -name '*.xdelta')
 do
     filename=$(basename $file)
     extension="${filename##*.}"
@@ -25,7 +34,7 @@ do
     then
         old_path=$(find $game_path -name $filename_new)
         echo "Patching $filename_new"
-        xdelta3 -d -f -s "$old_path" "$file" "$OUTPUT_FOLDER/$filename_new"
+        xdelta3 -d -f -s "$old_path" "$file" "$output_dir/$filename_new"
     else # file doesn't exist in old version
         echo "Error: Can't find $filename_new"
     fi

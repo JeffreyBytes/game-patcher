@@ -3,12 +3,18 @@
 clear
 
 current_dir=$(pwd)
-PATCH_FOLDER="$current_dir/patches/"
+patch_dir="$current_dir/patches/"
 
 echo -n "Old build path: "
 read OLD
 echo -n "New build path: "
 read NEW
+
+# Check if patch directory exists
+if [[ ! -d $patch_dir ]]
+then
+    mkdir $patch_dir
+fi
 
 IFS=$'\n'
 
@@ -22,13 +28,13 @@ do
         if [[ -n $(diff $old_path $file) ]] # old and new files differ
         then
             echo "Generating patch file for $filename"
-            xdelta3 -e -f -s "$old_path" "$file" "$PATCH_FOLDER/$filename.xdelta"
+            xdelta3 -e -f -s "$old_path" "$file" "$patch_dir/$filename.xdelta"
         else # old and new files are same
             echo "Skipping: $filename has not changed"
         fi
     else # file doesn't exist in old version, copy entire file to patch folder
         echo "New File: Copying entire file"
-        cp "$file" "$PATCH_FOLDER/$filename"
+        cp "$file" "$patch_dir/$filename"
     fi
 
 done
